@@ -4,7 +4,7 @@ module alu_decoder
     input [2:0] i_funct3,
     input [6:0] i_funct7,
 
-    output logic [2:0] o_alu_control, 
+    output logic [2:0] o_alu_control
 );
     always_comb begin
         case (i_ALUOp)
