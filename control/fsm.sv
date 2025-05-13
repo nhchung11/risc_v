@@ -44,18 +44,22 @@ always_comb begin
         7'b0110011: next_state = EXECUTE_R; // R-type
         7'b0010011: next_state = EXECUTE_I; // I-type
         7'b1101111: next_state = JAL;       // J-type
-        default: next_state = FETCH;
+        default:    next_state = FETCH;
+      endcase
+    end
+
+    MEMADR: begin
+      case (i_opcode)
+        7'b0000011: next_state = MEMREAD;   // I-type
+        7'b0100011: next_state = MEMWRITE;  // S-type
+        default:    next_state = FETCH;
       endcase
     end
 
     MEMREAD: begin
-      case (i_opcode)
-        7'b0000011: next_state = MEMREAD;   // I-type
-        7'b0100011: next_state = MEMWRITE;  // S-type
-        default: next_state = FETCH;
-      endcase
+      next_state = MEMWB; 
     end
-
+    
     EXECUTE_R: begin
       next_state = ALUWB;
     end
@@ -93,7 +97,7 @@ end
 always_ff @(posedge i_clk or negedge i_rstn) begin
   if (!i_rstn) begin
     o_AdSrc     <= 1'b0;
-    o_IRWrite   <= 1'b0;  
+    o_IRWrite   <= 1'b1;  
     o_RegWrite  <= 1'b0;
     o_MemWrite  <= 1'b0;
     o_ResultSrc <= 2'b10;
@@ -101,6 +105,7 @@ always_ff @(posedge i_clk or negedge i_rstn) begin
     o_ALUSrcB   <= 2'b00;
     o_ALUOp     <= 2'b00;
     o_PCUpdate  <= 1'b0;
+    o_Branch    <= 1'b0;
   end
   else begin
     case (current_state)
@@ -108,6 +113,7 @@ always_ff @(posedge i_clk or negedge i_rstn) begin
         o_ALUSrcA   <= 2'b01;
         o_ALUSrcB   <= 2'b01;
         o_ALUOp     <= 2'b00;
+        o_IRWrite   <= 1'b0;
       end
 
       MEMADR: begin
@@ -120,6 +126,7 @@ always_ff @(posedge i_clk or negedge i_rstn) begin
         o_ALUSrcA   <= 2'b10;
         o_ALUSrcB   <= 2'b00;
         o_ALUOp     <= 2'b10;
+        o_Branch    <= 1'b0;
       end
 
       EXECUTE_I: begin

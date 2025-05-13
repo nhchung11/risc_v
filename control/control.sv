@@ -2,9 +2,13 @@ module control
 (
     input i_clk, i_rstn, i_zero,
     input [31:0] i_instr,
-    output logic o_RegWrite, o_MemWrite, o_IRWrite, o_AdSrc, o_PCUpdate, o_Branch,
+    output logic o_RegWrite, o_MemWrite, o_IRWrite, o_AdSrc, 
+    output o_PCWrite,
     output logic [1:0] o_ResultSrc, o_ALUSrcA, o_ALUSrcB, o_ALUOp
 );
+
+logic Branch, PCUpdate;
+assign o_PCWrite = PCUpdate | (Brachh & i_zero);
 
 fsm fsm_inst
 (
@@ -16,8 +20,8 @@ fsm fsm_inst
     .o_MemWrite     (o_MemWrite     ),
     .o_IRWrite      (o_IRWrite      ),
     .o_AdSrc        (o_AdSrc        ),
-    .o_PCUpdate     (o_PCUpdate     ),
-    .o_Branch       (o_Branch       ),
+    .o_PCUpdate     (PCUpdate       ),
+    .o_Branch       (Branch         ),
     .o_ResultSrc    (o_ResultSrc    ),
     .o_ALUSrcA      (o_ALUSrcA      ),
     .o_ALUSrcB      (o_ALUSrcB      ),

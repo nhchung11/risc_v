@@ -36,24 +36,13 @@ module tb;
 
     // Apply test inputs
     i_opcode = 7'b0000011;
-    #10;
-    i_opcode = 7'b0100011;
-    #10;
-    i_opcode = 7'b1100011;
-    #10;
-    i_opcode = 7'b0110011;
-    #10;
-    i_opcode = 7'b0010011;
-    #10;
-    i_opcode = 7'b1101111;
-    #10;
-    i_opcode = 7'b1010;
-    #10;
-    i_opcode = 7'b0000011;
-    #10;
-    i_opcode = 7'b0100011;
-    #10;
 
+    #50;
+    i_opcode = 7'b0110011;
+
+    #50;
+    i_opcode = 7'b1100011;
+    #100;
     // Finish simulation
     $finish;
   end
