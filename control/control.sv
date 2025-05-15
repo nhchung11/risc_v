@@ -4,11 +4,11 @@ module control
     input [31:0] i_instr,
     output logic o_RegWrite, o_MemWrite, o_IRWrite, o_AdSrc, 
     output o_PCWrite,
-    output logic [1:0] o_ResultSrc, o_ALUSrcA, o_ALUSrcB, o_ALUOp
+    output logic [1:0] o_ResultSrc, o_ALUSrcA, o_ALUSrcB, o_ALUOp, o_ImmSrc
 );
 
 logic Branch, PCUpdate;
-assign o_PCWrite = PCUpdate | (Brachh & i_zero);
+assign o_PCWrite = PCUpdate | (Branch & i_zero);
 
 fsm fsm_inst
 (
@@ -39,6 +39,6 @@ alu_decoder alu_decoder_inst
 instr_decoder instr_decoder_inst
 (
     .i_opcode       (i_opcode       ),
-    .o_immsrc       (o_ALUSrcB      )
+    .o_immsrc       (o_ImmSrc       )
 );
 endmodule
