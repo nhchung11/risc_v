@@ -3,8 +3,8 @@ module fsm
   input i_clk, i_rstn, i_zero,
   input [6:0] i_opcode,
 
-  output logic o_RegWrite, o_MemWrite, o_IRWrite, o_AdSrc, o_PCUpdate, o_Branch,
-  output logic [1:0] o_ResultSrc, o_ALUSrcA, o_ALUSrcB, o_ALUOp
+  output logic o_reg_write, o_mem_write, o_ir_write, o_adr_src, o_pc_update, o_branch,
+  output logic [1:0] o_result_src, o_alu_srcA, o_alu_srcB, o_alu_op
 );
 
 typedef enum logic [3:0] {
@@ -96,80 +96,80 @@ end
 
 always_ff @(posedge i_clk or negedge i_rstn) begin
   if (!i_rstn) begin
-    o_AdSrc     <= 1'b0;
-    o_IRWrite   <= 1'b1;  
-    o_RegWrite  <= 1'b0;
-    o_MemWrite  <= 1'b0;
-    o_ResultSrc <= 2'b10;
-    o_ALUSrcA   <= 2'b00;
-    o_ALUSrcB   <= 2'b00;
-    o_ALUOp     <= 2'b00;
-    o_PCUpdate  <= 1'b0;
-    o_Branch    <= 1'b0;
+    o_adr_src     <= 1'b0;
+    o_ir_write    <= 1'b1;  
+    o_reg_write   <= 1'b0;
+    o_mem_write   <= 1'b0;
+    o_result_src  <= 2'b10;
+    o_alu_srcA    <= 2'b00;
+    o_alu_srcB    <= 2'b00;
+    o_alu_op      <= 2'b00;
+    o_pc_update   <= 1'b0;
+    o_branch      <= 1'b0;
   end
   else begin
     case (current_state)
       DECODE: begin
-        o_ALUSrcA   <= 2'b01;
-        o_ALUSrcB   <= 2'b01;
-        o_ALUOp     <= 2'b00;
-        o_IRWrite   <= 1'b0;
+        o_alu_srcA    <= 2'b01;
+        o_alu_srcB    <= 2'b01;
+        o_alu_op      <= 2'b00;
+        o_ir_write    <= 1'b0;
       end
 
       MEMADR: begin
-        o_ALUSrcA   <= 2'b10;
-        o_ALUSrcB   <= 2'b01;
-        o_ALUOp     <= 2'b00;
+        o_alu_srcA    <= 2'b10;
+        o_alu_srcB    <= 2'b01;
+        o_alu_op      <= 2'b00;
       end
 
       EXECUTE_R: begin
-        o_ALUSrcA   <= 2'b10;
-        o_ALUSrcB   <= 2'b00;
-        o_ALUOp     <= 2'b10;
-        o_Branch    <= 1'b0;
+        o_alu_srcA    <= 2'b10;
+        o_alu_srcB    <= 2'b00;
+        o_alu_op      <= 2'b10;
+        o_branch      <= 1'b0;
       end
 
       EXECUTE_I: begin
-        o_ALUSrcA   <= 2'b10;
-        o_ALUSrcB   <= 2'b01;
-        o_ALUOp     <= 2'b10;
+        o_alu_srcA    <= 2'b10;
+        o_alu_srcB    <= 2'b01;
+        o_alu_op      <= 2'b10;
       end
 
       JAL: begin
-        o_ALUSrcA   <= 2'b01;
-        o_ALUSrcB   <= 2'b10;
-        o_ALUOp     <= 2'b00;
-        o_ResultSrc <= 2'b00;
-        o_PCUpdate  <= 1'b1; 
+        o_alu_srcA    <= 2'b01;
+        o_alu_srcB    <= 2'b10;
+        o_alu_op      <= 2'b00;
+        o_result_src  <= 2'b00;
+        o_pc_update   <= 1'b1; 
       end
 
       BEQ: begin
-        o_ALUSrcA   <= 2'b10;
-        o_ALUSrcB   <= 2'b00;
-        o_ALUOp     <= 2'b01;
-        o_ResultSrc <= 2'b00;
-        o_Branch    <= 1'b1;
+        o_alu_srcA    <= 2'b10;
+        o_alu_srcB    <= 2'b00;
+        o_alu_op      <= 2'b01;
+        o_result_src  <= 2'b00;
+        o_branch      <= 1'b1;
       end
 
       MEMREAD: begin
-        o_ResultSrc <= 2'b00;
-        o_AdSrc     <= 1'b1;
+        o_result_src  <= 2'b00;
+        o_adr_src     <= 1'b1;
       end
 
       MEMWRITE: begin
-        o_ResultSrc <= 2'b00;
-        o_AdSrc     <= 1'b1;  
-        o_MemWrite  <= 1'b1;
+        o_result_src  <= 2'b00;
+        o_adr_src     <= 1'b1;  
+        o_mem_write   <= 1'b1;
       end
 
       ALUWB: begin
-        o_ResultSrc <= 2'b00;
-        o_RegWrite  <= 1'b1;
+        o_result_src  <= 2'b00;
+        o_reg_write   <= 1'b1;
       end
 
       MEMWB: begin
-        o_ResultSrc <= 2'b01;
-        o_RegWrite  <= 1'b1;
+        o_result_src  <= 2'b01;
+        o_reg_write   <= 1'b1;
       end
     endcase
   end

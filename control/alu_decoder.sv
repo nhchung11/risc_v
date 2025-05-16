@@ -1,13 +1,13 @@
 module alu_decoder
 (
-    input [1:0] i_ALUOp,
+    input [1:0] i_alu_op,
     input [2:0] i_funct3,
     input [6:0] i_funct7,
 
     output logic [2:0] o_alu_control
 );
     always_comb begin
-        case (i_ALUOp)
+        case (i_alu_op)
             2'b00: o_alu_control = 3'b000; // ADD
             2'b01: o_alu_control = 3'b001; // SUBTRACT
             2'b10: begin

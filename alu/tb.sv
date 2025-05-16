@@ -8,7 +8,7 @@ module tb;
     reg [2:0] i_alu_control;
 
     // Outputs
-    wire [31:0] o_ALU;
+    wire [31:0] o_alu;
     wire o_zero;
 
     // Instantiate the Unit Under Test (UUT)
@@ -16,7 +16,7 @@ module tb;
         .i_srcA(i_srcA),
         .i_srcB(i_srcB),
         .i_alu_control(i_alu_control),
-        .o_ALU(o_ALU),
+        .o_alu(o_alu),
         .o_zero(o_zero)
     );
 
@@ -70,10 +70,10 @@ module tb;
     end
 
     initial begin
-        // Monitor the signals only when o_ALU changes
-        forever @(o_ALU) begin
-            $display("Time = %0t | i_srcA = %d | i_srcB = %d | i_alu_control = %b | o_ALU = %d | o_zero = %b",
-                     $time, i_srcA, i_srcB, i_alu_control, o_ALU, o_zero);
+        // Monitor the signals only when o_alu changes
+        forever @(o_alu) begin
+            $display("Time = %0t | i_srcA = %d | i_srcB = %d | i_alu_control = %b | o_alu = %d | o_zero = %b",
+                     $time, i_srcA, i_srcB, i_alu_control, o_alu, o_zero);
         end
     end
 

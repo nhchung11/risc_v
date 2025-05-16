@@ -1,10 +1,10 @@
 module register_file
 (
-    input i_clk, i_rst_n, i_RegWrite,
-    input [31:0] i_write_data,
-    input [4:0] i_read_adr1, i_read_adr2, i_write_adr,
+    input i_clk, i_rst_n, i_reg_write,
+    input [31:0] i_data,
+    input [4:0] i_addr_srcA, i_addr_srcB, i_addr_des,
 
-    output logic [31:0] o_read_data1, o_read_data2  
+    output logic [31:0] o_dataA, o_dataB  
 );
 reg [31:0] registers [31:0];
 integer i;
@@ -15,13 +15,13 @@ always @(posedge i_clk or negedge i_rst_n) begin
             registers[i] <= 32'b0;
       end
     end else begin
-        if (i_RegWrite) begin
-            registers[i_write_adr] <= i_write_data;
+        if (i_reg_write) begin
+            registers[i_addr_des] <= i_data;
         end
     end
 end
 
-assign o_read_data1 = registers[i_read_adr1];
-assign o_read_data2 = registers[i_read_adr2];
+assign o_dataA = registers[i_addr_srcA];
+assign o_dataB = registers[i_addr_srcB];
 
 endmodule

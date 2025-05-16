@@ -1,75 +1,75 @@
 module tb;
-    reg clk, rst_n, wend;
-    reg [31:0] write_data;
-    reg [4:0] read_adr1, read_adr2, write_adr;
-    wire [31:0] read_data1, read_data2;
+    reg i_clk, i_rst_n, i_reg_write;
+    reg [31:0] i_data;
+    reg [4:0] i_addr_srcA, i_addr_srcB, i_addr_des;
+    wire [31:0] o_dataA, o_dataB;
 
     register_file dut (
-        .clk(clk),
-        .rst_n(rst_n),
-        .wend(wend),
-        .write_data(write_data),
-        .read_adr1(read_adr1),
-        .read_adr2(read_adr2),
-        .write_adr(write_adr),
-        .read_data1(read_data1),
-        .read_data2(read_data2)
+        .i_clk          (i_clk),
+        .i_rst_n        (i_rst_n),
+        .i_reg_write    (i_reg_write),
+        .i_data         (i_data),
+        .i_addr_srcA    (i_addr_srcA),
+        .i_addr_srcB    (i_addr_srcB),
+        .i_addr_des     (i_addr_des),
+        .o_dataA        (o_dataA),
+        .o_dataB        (o_dataB)
     );
 
     initial begin
-        clk = 0;
-        rst_n = 0;
-        wend = 0;
-        write_data = 0;
-        read_adr1 = 0;
-        read_adr2 = 0;
-        write_adr = 0;
+        i_clk = 0;
+        i_rst_n = 0;
+        i_reg_write = 0;
+        i_data = 0;
+        i_addr_srcA = 0;
+        i_addr_srcB = 0;
+        i_addr_des = 0;
 
-        #10 rst_n = 1;
+        #10 i_rst_n = 1;
 
         // Test case 1
-        #20 wend = 1;
-        write_data = 32'h12345678;
-        write_adr = 0;
+        #20 i_reg_write = 1;
+        i_data = 32'h12345678;
+        i_addr_des = 0;
         #10;
-        wend = 0;
+        i_reg_write = 0;
 
         // Test case 2
-        #20 wend = 1;
-        write_data = 32'h87654321;
-        write_adr = 1;
+        #20 i_reg_write = 1;
+        i_data = 32'h87654321;
+        i_addr_des = 1;
         #10;
-        wend = 0;
+        i_reg_write = 0;
 
         // Test case 3
-        #20 wend = 1;
-        write_data = 32'hABCDEF01;
-        write_adr = 2;
+        #20 i_reg_write = 1;
+        i_data = 32'hABCDEF01;
+        i_addr_des = 2;
         #10;
-        wend = 0;
+        i_reg_write = 0;
 
         // Test case 4
-        #20 wend = 1;
-        write_data = 32'hAACCEE01;
-        write_adr = 3;
+        #20 i_reg_write = 1;
+        i_data = 32'hAACCEE01;
+        i_addr_des = 3;
         #10;
-        wend = 0;
+        i_reg_write = 0;
 
         // Test case 5
-        #20 wend = 1;
-        write_data = 32'h11223344;
-        write_adr = 4;
+        #20 i_reg_write = 1;
+        i_data = 32'h11223344;
+        i_addr_des = 4;
         #10;
-        wend = 0;
+        i_reg_write = 0;
 
         #100 $finish;
     end
 
-    always #5 clk = ~clk;
+    always #5 i_clk = ~i_clk;
     // Monitor for write data
-    always @(posedge clk) begin
-        if (wend) begin
-            $display("Write Data at Address %0d: %h", write_adr, write_data);
+    always @(posedge i_clk) begin
+        if (i_reg_write) begin
+            $display("Write Data at Address %0d: %h", i_addr_des, i_data);
         end
     end
 endmodule
