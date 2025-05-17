@@ -1,19 +1,33 @@
 module reg_ex
 (
-    input i_clk, i_rst_n,
-    input [31:0] i_dataA_ID, i_dataB_ID, 
-    input [31:0] i_pc_ID, imm_ext_ID, i_pc_plus4_ID,
-    input [11:7] i_addr_des_ID,
-    input i_alu_src_ID, i_branch_ID, i_jump_ID, i_mem_write_ID, i_reg_write_ID,
-    input [2:0] i_alu_control_ID,
-    input [1:0] i_result_src_ID, 
+    input               i_clk, i_rst_n,
+    input [31:0]        i_dataA_ID, 
+    input [31:0]        i_dataB_ID, 
+    input [31:0]        i_pc_ID, 
+    input [31:0]        imm_ext_ID, 
+    input [31:0]        i_pc_plus4_ID,
+    input [11:7]        i_addr_des_ID,
+    input               i_alu_src_ID, 
+    input               i_branch_ID, 
+    input               i_jump_ID, 
+    input               i_mem_write_ID, 
+    input               i_reg_write_ID,
+    input [2:0]         i_alu_control_ID,
+    input [1:0]         i_result_src_ID, 
 
-    output logic [31:0] o_dataA_EX, o_dataB_EX,
-    output logic [31:0] o_pc_EX, o_pc_plus4_EX, o_imm_ext_EX,
+    output logic [31:0] o_dataA_EX, 
+    output logic [31:0] o_dataB_EX,
+    output logic [31:0] o_pc_EX, 
+    output logic [31:0] o_pc_plus4_EX, 
+    output logic [31:0] o_imm_ext_EX,
     output logic [11:7] o_addr_des_EX,
-    output logic o_alu_src_EX, o_branch_EX, o_jump_EX, o_mem_write_EX, o_reg_write_EX,
-    output logic [2:0] o_alu_control_EX,
-    output logic [1:0] o_result_src_EX
+    output logic        o_alu_src_EX, 
+    output logic        o_branch_EX,
+    output logic        o_jump_EX,
+    output logic        o_mem_write_EX,
+    output logic        o_reg_write_EX,
+    output logic [2:0]  o_alu_control_EX,
+    output logic [1:0]  o_result_src_EX
 );
 
 register #(.WIDTH(32)) reg_dataA_ID

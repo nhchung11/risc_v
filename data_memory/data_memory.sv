@@ -1,21 +1,21 @@
 module data_memory
 (
-    input logic i_clk, i_rstn,
-    input logic i_mem_write, // Write enable
-    input logic [10:0] i_addr, // Address for read/write
-    input logic [31:0] i_data, // Data to write
-    output logic [31:0] o_data // Data read from memory
+    input logic         i_clk, i_rstn,
+    input logic         i_mem_write, 
+    input logic [10:0]  i_addr, 
+    input logic [31:0]  i_data,
+    output logic [31:0] o_data 
 );
 
     // Memory array
     logic [31:0] mem [0:1027];
 
-    // Read operation (combinational)
+    // Read operation 
     always_comb begin
         o_data = mem[i_addr];
     end
 
-    // Write operation (synchronous)
+    // Write operation 
     always_ff @(posedge i_clk or negedge i_rstn) begin
         if (!i_rstn) begin
             for (int i = 0; i < 1028; i++) begin
