@@ -27,6 +27,9 @@ module id
 logic [31:0]    w_instr_ID;
 logic [1:0]     w_imm_src_ID;
 
+// Combinational logic
+assign o_addr_des_ID = w_instr_ID[11:7];
+
 // Sub-modules
 reg_id reg_id0
 (

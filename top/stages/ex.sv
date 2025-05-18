@@ -20,14 +20,14 @@ module ex
     output logic [1:0]  o_result_src_EX,
     output logic [31:0] o_alu_result_EX,
     output logic [31:0] o_dataB_EX,
-    output logic [31:0] o_addr_des_EX,
+    output logic [11:7] o_addr_des_EX,
     output logic [31:0] o_pc_plus4_EX,
     output logic [31:0] o_pc_target_EX,
     output logic        o_pc_src_EX
 );
 
 // Wires
-wire [31:0] w_alu_src_EX;
+wire        w_alu_src_EX;
 wire [2:0]  w_alu_control_EX;
 wire        w_jump_EX;
 wire        w_branch_EX;
@@ -40,6 +40,7 @@ wire        w_zero_EX;
 
 // Combinational logic
 assign o_pc_src_EX = w_jump_EX | (w_branch_EX & w_zero_EX);
+assign o_dataB_EX = w_dataB_EX; 
 
 // Sub-modules
 reg_ex reg_ex0
@@ -58,6 +59,7 @@ reg_ex reg_ex0
     .i_mem_write_ID     (i_mem_write_ID     ),
     .i_reg_write_ID     (i_reg_write_ID     ),
     .i_alu_control_ID   (i_alu_control_ID   ),
+    .i_result_src_ID    (i_result_src_ID    ),
 
     .o_dataA_EX         (w_dataA_EX         ),
     .o_dataB_EX         (w_dataB_EX         ),
@@ -68,14 +70,17 @@ reg_ex reg_ex0
     .o_alu_src_EX       (w_alu_src_EX       ), 
     .o_branch_EX        (w_branch_EX        ), 
     .o_jump_EX          (w_jump_EX          ), 
-    .o_alu_control_EX   (w_alu_control_EX   )
+    .o_alu_control_EX   (w_alu_control_EX   ),
+    .o_mem_write_EX     (o_mem_write_EX     ),
+    .o_reg_write_EX     (o_reg_write_EX     ),
+    .o_result_src_EX    (o_result_src_EX    )
 );
 
 mux2to1 mux_B0
 (
     .a                  (w_dataB_EX         ),
     .b                  (w_imm_ext_EX       ),
-    .sel                (w_alu_src_EX       ),
+    .sel                (w_alu_src_EX       ),        
     .y                  (w_dataB_mux_EX     )
 );
 

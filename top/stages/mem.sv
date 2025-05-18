@@ -22,6 +22,9 @@ wire w_mem_write_MEM;
 wire [31:0] w_dataB_MEM;
 wire [31:0] w_alu_result_MEM;
 
+// Combinational logic
+assign o_alu_result_MEM = w_alu_result_MEM;
+
 // Sub-modules
 reg_mem reg_mem0
 (
@@ -49,7 +52,7 @@ data_memory data_memory0
     .i_clk              (i_clk              ),
     .i_rstn             (i_rst_n            ),
     .i_mem_write        (w_mem_write_MEM    ),
-    .i_addr             (w_alu_result_MEM   ),
+    .i_addr             (w_alu_result_MEM[10:0]),
     .i_data             (w_dataB_MEM        ),
     .o_data             (o_data_MEM         )
 );

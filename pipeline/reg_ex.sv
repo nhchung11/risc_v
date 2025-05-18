@@ -30,118 +30,118 @@ module reg_ex
     output logic [1:0]  o_result_src_EX
 );
 
-register #(.WIDTH(32)) reg_dataA_ID
+register #(.WIDTH(32)) reg_dataA_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_dataA_ID),
-    .q      (o_dataA_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_dataA_ID     ),
+    .q      (o_dataA_EX     )
 );
 
-register #(.WIDTH(32)) reg_dataB_ID
+register #(.WIDTH(32)) reg_dataB_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_dataB_ID),
-    .q      (o_dataB_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_dataB_ID     ),
+    .q      (o_dataB_EX     )
 );
 
-register #(.WIDTH(32)) reg_pc_ID
+register #(.WIDTH(32)) reg_pc_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_pc_ID),
-    .q      (o_pc_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_pc_ID        ),
+    .q      (o_pc_EX        )
 );
 
-register #(.WIDTH(32)) reg_pc_plus4_ID
+register #(.WIDTH(32)) reg_pc_plus4_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_pc_plus4_ID),
-    .q      (o_pc_plus4_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_pc_plus4_ID  ),
+    .q      (o_pc_plus4_EX  )
 );
 
-register #(.WIDTH(32)) reg_imm_ext_ID
+register #(.WIDTH(32)) reg_imm_ext_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (imm_ext_ID),
-    .q      (o_imm_ext_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (imm_ext_ID     ),
+    .q      (o_imm_ext_EX   )
 );
 
-register #(.WIDTH(5)) reg_addr_des_ID
+register #(.WIDTH(5)) reg_addr_des_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_addr_des_ID),
-    .q      (o_addr_des_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_addr_des_ID  ),
+    .q      (o_addr_des_EX  )
 );
 
-register #(.WIDTH(1)) reg_alu_src_ID
+register #(.WIDTH(1)) reg_alu_src_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_alu_src_ID),
-    .q      (o_alu_src_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_alu_src_ID   ),
+    .q      (o_alu_src_EX   )
 );
-register #(.WIDTH(1)) reg_branch_ID
+register #(.WIDTH(1)) reg_branch_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_branch_ID),
-    .q      (o_branch_EX)
-);
-
-register #(.WIDTH(1)) reg_jump_ID
-(
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_jump_ID),
-    .q      (o_jump_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_branch_ID    ),
+    .q      (o_branch_EX    )
 );
 
-register #(.WIDTH(1)) reg_mem_write_ID
+register #(.WIDTH(1)) reg_jump_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_mem_write_ID),
-    .q      (o_mem_write_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_jump_ID      ),
+    .q      (o_jump_EX      )
 );
 
-register #(.WIDTH(1)) reg_reg_write_ID
+register #(.WIDTH(1)) reg_mem_write_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
-    .d      (i_reg_write_ID),
-    .q      (o_reg_write_EX)
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_mem_write_ID ),
+    .q      (o_mem_write_EX )
 );
 
-register #(.WIDTH(3)) reg_alu_control_ID
+register #(.WIDTH(1)) reg_reg_write_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
+    .d      (i_reg_write_ID ),
+    .q      (o_reg_write_EX )
+);
+
+register #(.WIDTH(3)) reg_alu_control_EX
+(
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
     .d      (i_alu_control_ID),
     .q      (o_alu_control_EX)
 );
 
-register #(.WIDTH(2)) reg_result_src_ID
+register #(.WIDTH(2)) reg_result_src_EX
 (
-    .clk    (i_clk),
-    .rst    (i_rst_n),
-    .en     (1'b1),
+    .clk    (i_clk          ),
+    .rstn   (i_rst_n        ),
+    .en     (1'b1           ),
     .d      (i_result_src_ID),
     .q      (o_result_src_EX)
 );

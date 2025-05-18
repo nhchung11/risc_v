@@ -28,7 +28,7 @@ wire        w_mem_write_EX;
 wire [1:0]  w_result_src_EX;
 wire [31:0] w_alu_result_EX;
 wire [31:0] w_dataB_EX;
-wire [31:0] w_addr_des_EX;
+wire [11:7] w_addr_des_EX;
 wire [31:0] w_pc_plus4_EX;
 wire [31:0] w_pc_target_EX;
 wire        w_pc_src_EX;
@@ -83,16 +83,18 @@ ex ex0
     .i_clk              (i_clk              ),
     .i_rst_n            (i_rstn             ),
     .i_reg_write_ID     (w_reg_write_ID     ),
-    .i_alu_src_ID       (w_alu_src_ID       ),
-    .i_branch_ID        (w_branch_ID        ),
-    .i_jump_ID          (w_jump_ID          ),
     .i_mem_write_ID     (w_mem_write_ID     ),
+    .i_result_src_ID    (w_result_src_ID    ),
+    .i_jump_ID          (w_jump_ID          ),
+    .i_branch_ID        (w_branch_ID        ),
+    .i_alu_control_ID   (w_alu_control_ID   ),
+    .i_alu_src_ID       (w_alu_src_ID       ),
     .i_dataA_ID         (w_dataA_ID         ),
     .i_dataB_ID         (w_dataB_ID         ),
+    .i_pc_ID            (w_pc_ID            ),
     .i_imm_ext_ID       (w_imm_ext_ID       ),
     .i_addr_des_ID      (w_addr_des_ID      ),
     .i_pc_plus4_ID      (w_pc_plus4_ID      ),
-    .i_alu_control_ID   (w_alu_control_ID   ),
 
     .o_reg_write_EX     (w_reg_write_EX     ),
     .o_mem_write_EX     (w_mem_write_EX     ),
@@ -101,7 +103,7 @@ ex ex0
     .o_dataB_EX         (w_dataB_EX         ),
     .o_addr_des_EX      (w_addr_des_EX      ),
     .o_pc_plus4_EX      (w_pc_plus4_EX      ),
-    .o_pc_target_EX     (w_pc_target_EX      ),
+    .o_pc_target_EX     (w_pc_target_EX     ),
     .o_pc_src_EX        (w_pc_src_EX        )
 );
 
@@ -129,7 +131,7 @@ wb wb0
 (
     .i_clk              (i_clk              ),
     .i_rst_n            (i_rstn             ),
-    .i_reg_write_MEM    (w_reg_write_MEM     ),
+    .i_reg_write_MEM    (w_reg_write_MEM    ),
     .i_result_src_MEM   (w_result_src_MEM   ),
     .i_alu_result_MEM   (w_alu_result_MEM   ),
     .i_data_MEM         (w_data_MEM         ),

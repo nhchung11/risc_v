@@ -16,30 +16,57 @@ module reg_wb
     output logic [1:0]  o_result_src_WB
 );
 
-    register #(.WIDTH(32)) reg_alu_result_MEM
+    register #(.WIDTH(32)) reg_alu_result_WB
     (
         .clk    (i_clk),
-        .rst    (i_rst_n),
+        .rstn   (i_rst_n),
         .en     (1'b1),
         .d      (i_alu_result_MEM),
         .q      (o_alu_result_WB)
     );
 
-    register #(.WIDTH(32)) reg_data_MEM
+    register #(.WIDTH(32)) reg_data_WB
     (
         .clk    (i_clk),
-        .rst    (i_rst_n),
+        .rstn   (i_rst_n),
         .en     (1'b1),
         .d      (i_data_MEM),
         .q      (o_data_WB)
     );
 
-    register #(.WIDTH(5)) reg_addr_des_MEM
+    register #(.WIDTH(5)) reg_addr_des_WB
     (
         .clk    (i_clk),
-        .rst    (i_rst_n),
+        .rstn   (i_rst_n),
         .en     (1'b1),
         .d      (i_addr_des_MEM),
         .q      (o_addr_des_WB)
+    );
+
+    register #(.WIDTH(1)) reg_reg_write_WB
+    (
+        .clk    (i_clk),
+        .rstn   (i_rst_n),
+        .en     (1'b1),
+        .d      (i_reg_write_MEM),
+        .q      (o_reg_write_WB)
+    );
+
+    register #(.WIDTH(32)) reg_pc_plus4_WB
+    (
+        .clk    (i_clk),
+        .rstn   (i_rst_n),
+        .en     (1'b1),
+        .d      (i_pc_plus4_MEM),
+        .q      (o_pc_plus4_WB)
+    );
+
+    register #(.WIDTH(2)) reg_result_src_WB
+    (
+        .clk    (i_clk),
+        .rstn   (i_rst_n),
+        .en     (1'b1),
+        .d      (i_result_src_MEM),
+        .q      (o_result_src_WB)
     );
 endmodule

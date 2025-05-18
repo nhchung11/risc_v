@@ -38,7 +38,7 @@ module tb;
         
         // Test case 3
         i_pc = 8;
-        #20;
+        #200;
         
         // Add more test cases as needed
         

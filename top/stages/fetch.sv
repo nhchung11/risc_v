@@ -12,30 +12,36 @@ module fetch
 // Wires
 wire [31:0] w_pc_F0;
 wire [31:0] w_pc_F;
+logic [31:0] w_pc_plus4_F;
+
+// Combinational logic
+assign o_pc_F = w_pc_F;
+assign o_pc_plus4_F = w_pc_plus4_F;
 
 // Sub-modules
 mux2to1 mux_pc0
 (
-    .a          (i_pc_target_EX),
-    .b          (w_pc_plus4_F),
-    .sel        (i_pc_src_EX),
-    .y          (w_pc_F0)
+    .a          (w_pc_plus4_F   ),
+    .b          (i_pc_target_EX ),
+    .sel        (i_pc_src_EX    ),
+    .y          (w_pc_F0        )
 );
+
 
 register #(.WIDTH(32)) reg_pc0
 (
     .clk        (i_clk),
-    .rst        (i_rst_n),
+    .rstn       (i_rst_n),
     .en         (1'b1),
     .d          (w_pc_F0),
-    .q          (o_pc_F)
+    .q          (w_pc_F)
 );
 
 adder #(.WIDTH(32)) adder_pc0
 (
     .a          (w_pc_F),
     .b          (32'd4),
-    .sum        (o_pc_plus4_F)
+    .sum        (w_pc_plus4_F)
 );
 
 instruction_memory instruction_memory0

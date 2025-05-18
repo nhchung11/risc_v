@@ -10,7 +10,7 @@ module wb
 
     output logic [31:0] o_result_WB,
     output logic [11:7] o_addr_des_WB,
-    output logic        o_reg_write_WB 
+    output logic        o_reg_write_WB
 );
 
 // Wires
