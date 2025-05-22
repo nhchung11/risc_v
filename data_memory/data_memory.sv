@@ -9,10 +9,13 @@ module data_memory
 
     // Memory array
     logic [31:0] mem [0:1027];
+    logic [7:0] word_adr;
+
+    assign word_adr = i_addr[9:2];
 
     // Read operation 
     always_comb begin
-        o_data = mem[i_addr];
+        o_data = mem[word_adr];
     end
 
     // Write operation 
@@ -22,7 +25,7 @@ module data_memory
                 mem[i] <= 32'd0;
             end
         end else if (i_mem_write) begin
-            mem[i_addr] <= i_data;
+            mem[word_adr] <= i_data;
         end
     end
 
