@@ -5,7 +5,7 @@ module instruction_memory
     output logic [31:0]     o_instr
 );
     // Memory array
-    logic [31:0] instruction_memory [0:255];
+    logic [31:0] instruction_memory [0:1023];
 
     
     always_ff @(posedge i_clk or negedge i_rst_n) begin
