@@ -5,32 +5,62 @@ module btb
     parameter INDEX     = $clog2(ENTRY_NUM),
     parameter TAG       = ENTRY_NUM - INDEX - 2
 )(
-    input logic                 i_clk,
-    input logic                 i_rst_n,
-    input logic                 i_jump_ID,
-    input logic                 i_pc_src_EX,
-    input logic [WIDTH-1:0]     i_pc_F,
-    input logic [WIDTH-1:0]     i_pc_target_ID,
-    input logic [WIDTH-1:0]     i_pc_plus4_F,
-
-    output                      o_flush_PC,
-    output logic [WIDTH-1:0]    o_pc_F0
+    input logic                 i_clk           ,
+    input logic                 i_rst_n         ,
+    input logic                 i_taken         ,
+    input logic [WIDTH-1:0]     i_pc_target     ,
+    input logic                 i_branch        ,
+    input logic                 i_jump          ,
+    input logic [WIDTH-1:0]     i_pipelined_pc  ,
+    
+    output logic [WIDTH-1:0]    o_pc
 );
 
     // Wires
     logic               w_hit;
-    logic               w_taken;
-    logic [WIDTH-1:0]   w_pc_target_F;
-    logic [INDEX-1:0]   w_index;
-    logic [TAG-1:0]     w_tag;
-    logic               w_pc_sel;
+    logic [WIDTH-1:0]   w_target_sel;
+    logic [INDEX-1:0]   w_pc_index;
+    logic [TAG-1:0]     w_pc_tag;
+    logic [WIDTH-1:0]   w_pc_target;
+    logic [WIDTH-1:0]   w_pc;
 
-    logic [1:0]         w_btb_predicted;
+    // BTB signals
+    logic [1:0]         w_btb_pred;
     logic [TAG-1:0]     w_btb_tag;
     logic               w_btb_valid;
     logic [WIDTH-1:0]   w_btb_target;
-    logic               w_btb_update_en;
-    logic [INDEX-1:0]   w_hold_index;
+
+    // Adder
+    logic [WIDTH-1:0]   w_pc_plus4;
+
+    // Save PC + 4
+    logic [WIDTH-1:0]   reg_plus4;
+    logic               hold_branch;
+    logic [1:0]         reg_branch_delay;
+    logic [WIDTH-1:0]   hold_current_pc;
+
+    always @(posedge i_clk or negedge i_rst_n) begin
+        #0.5;
+        if (!i_rst_n) begin
+            reg_plus4 <= '0;
+        end else if (i_branch) begin
+            reg_plus4 <= o_pc - 4;
+        end
+    end
+
+    always @(posedge i_clk or negedge i_rst_n) begin
+        #0.5;
+        if (!i_rst_n) begin
+            reg_branch_delay <= 2'b00;
+        end else begin
+            if (i_branch) begin
+                reg_branch_delay <= 2'b11;
+            end else begin
+                reg_branch_delay <= {reg_branch_delay[0], 1'b0};
+            end
+        end
+    end
+    assign #0.1 hold_branch = ^reg_branch_delay;
     
 
     // BTB entry structure
@@ -38,73 +68,88 @@ module btb
         logic [TAG-1:0]     tag;        
         logic               valid;                  
         logic [WIDTH-1:0]   target;    
-        logic [1:0]         predicted; 
+        logic [1:0]         pred; 
     } btb_entry_t;
 
     btb_entry_t btb_array[ENTRY_NUM];
 
     // Combinational logic
-    assign #0.1 w_pc_sel         = i_jump_ID || i_pc_src_EX;
-    assign #0.1 o_flush_PC       = ~w_taken && i_jump_ID;
-    assign      w_tag            = i_pc_F[WIDTH - 1:INDEX + 2];
-    assign      w_index          = i_pc_F[INDEX + 1:2];
-    assign      w_btb_target     = btb_array[w_index].target;
-    assign      w_btb_predicted  = btb_array[w_index].predicted;
-    assign      w_btb_tag        = btb_array[w_index].tag;
-    assign      w_btb_valid      = btb_array[w_index].valid;
-    assign #0.1 w_taken          = w_hit && btb_array[w_index].predicted[1]; 
-    assign #0.1 w_hit            = (w_btb_tag == w_tag) && w_btb_valid;
-    assign #0.1 w_btb_update_en  = w_pc_sel && ~w_hit;
+    assign      w_pc_tag         = i_pc_target[WIDTH - 1:INDEX + 2];
+    assign      w_pc_index       = i_pc_target[INDEX + 1:2];
+    assign #0.1 w_hit            = (w_btb_tag == w_pc_tag) && w_btb_valid;
+    assign #0.1 w_target_sel     = w_hit & w_btb_pred[1]; 
+
+    assign      w_btb_target     = btb_array[w_pc_index].target;
+    assign      w_btb_pred       = btb_array[w_pc_index].pred;
+    assign      w_btb_tag        = btb_array[w_pc_index].tag;
+    assign      w_btb_valid      = btb_array[w_pc_index].valid;
+    
 
 
     // Update BTB
-    always_ff @(posedge i_clk or negedge i_rst_n) begin
+    always @(posedge i_clk or negedge i_rst_n) begin
+        #0.5;
         if (!i_rst_n) begin
             for (int i = 0; i < ENTRY_NUM; i++) begin
                 btb_array[i].valid      <= 1'b0;
+                btb_array[i].tag        <= '0;
+                btb_array[i].target     <= '0;
             end
-        end else if (w_btb_update_en) begin
-            btb_array[w_hold_index].tag      <= i_pc_F[w_tag];
-            btb_array[w_hold_index].target   <= i_pc_target_ID;
-            btb_array[w_hold_index].valid    <= 1'b1;
+        end else if (i_taken) begin
+            btb_array[i_pipelined_pc[INDEX + 1:2]].tag      <= i_pipelined_pc[w_pc_tag];
+            btb_array[i_pipelined_pc[INDEX + 1:2]].target   <= hold_current_pc;
+            btb_array[i_pipelined_pc[INDEX + 1:2]].valid    <= 1'b1;
         end
     end
 
     // Update BTB prediction
-    always_ff @(posedge i_clk or negedge i_rst_n) begin
+    always @(posedge i_clk or negedge i_rst_n) begin
+        #0.5;
         if (!i_rst_n) begin
             for (int i = 0; i < ENTRY_NUM; i++) begin
-                btb_array[i].predicted <= 2'b00; // Initialize all predictions to not taken
+                btb_array[i].pred <= 2'b00; 
             end
-        end else if (w_btb_update_en) begin
-            btb_array[w_hold_index].predicted <= 2'b10;
+        end else if (i_taken) begin
+            btb_array[i_pipelined_pc[INDEX + 1:2]].pred <= 2'b10;
         end
     end
 
-    // Hold index
-    always_ff @(posedge i_clk or negedge i_rst_n) begin
+    // PC register
+    always @(posedge i_clk or negedge i_rst_n) begin
+        #0.5;
         if (!i_rst_n) begin
-            w_hold_index <= 0;
+            o_pc <= '0;
+            hold_current_pc <= '0;
         end else begin
-            w_hold_index <= w_index;
+            hold_current_pc <= o_pc;
+            if (hold_branch && ~i_taken) begin
+                o_pc <= reg_plus4;
+            end else begin
+                o_pc <= w_pc;
+            end
         end
     end
+
+    assign #0.2 w_pc_plus4 = o_pc + 4;
+
 
     // MUX0 - select target PC based on taken or not
-    always_comb begin
-        if (w_taken) begin
-            w_pc_target_F = w_btb_target;
+    always @(*) begin
+        #0.5;
+        if (w_target_sel) begin
+            w_pc_target = w_btb_target;
         end else begin
-            w_pc_target_F = i_pc_target_ID  ;
+            w_pc_target = i_pc_target;
         end
     end
 
     // MUX1 - select PC for next cycle
-    always_comb begin
-        if (w_pc_sel | w_taken) begin
-            o_pc_F0 = w_pc_target_F;
+    always @(*) begin
+        #0.5;
+        if (i_jump || i_branch) begin
+            w_pc = w_pc_target;
         end else begin
-            o_pc_F0 = i_pc_plus4_F;
+            w_pc = w_pc_plus4;
         end
     end
 endmodule
