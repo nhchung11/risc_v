@@ -12,6 +12,7 @@ module tb;
     logic i_jump                            ;
     logic [WIDTH-1:0] i_pc_target           ;
     logic [WIDTH-1:0] i_pipelined_pc        ; 
+    logic             o_flush               ;
     logic [WIDTH-1:0] o_pc                  ;
     logic [WIDTH-1:0] w_hold_pipeline [0:3] ;
     
@@ -28,6 +29,7 @@ module tb;
         .i_jump         (i_jump         ),
         .i_pc_target    (i_pc_target    ),
         .i_pipelined_pc (i_pipelined_pc ),
+        .o_flush        (o_flush        ),
         .o_pc           (o_pc           )
     );
 
@@ -97,10 +99,11 @@ module tb;
         write(32'h00000040, 0, 0, 0); 
         write(32'h00000044, 0, 0, 0); 
         write(32'h00000048, 0, 0, 0); 
-        write(32'h0000000C, 0, 1, 0); 
-        write(32'h00000010, 0, 0, 0); 
-        write(32'h00000014, 0, 0, 0); 
-        write(32'h00000018, 0, 0, 0); 
+        write(32'h0000000C, 1, 1, 0); 
+        write(32'h00000040, 0, 0, 0); 
+        write(32'h00000050, 0, 0, 0); 
+        write(32'h00000060, 0, 0, 0); 
+        write(32'h00000070, 0, 0, 0); 
 
         #100;
         @(posedge i_clk);

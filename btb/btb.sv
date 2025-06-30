@@ -13,6 +13,7 @@ module btb
     input logic                 i_jump          ,
     input logic [WIDTH-1:0]     i_pipelined_pc  ,
     
+    output logic                o_flush         ,        
     output logic [WIDTH-1:0]    o_pc
 );
 
@@ -76,17 +77,17 @@ module btb
     // Combinational logic
     assign      w_pc_tag         = i_pc_target[WIDTH - 1:INDEX + 2];
     assign      w_pc_index       = i_pc_target[INDEX + 1:2];
-    assign #0.1 w_hit            = (w_btb_tag == w_pc_tag) && w_btb_valid;
-    assign #0.1 w_target_sel     = w_hit & w_btb_pred[1]; 
+    assign #0.2 w_hit            = (w_btb_tag == w_pc_tag) && w_btb_valid;
+    assign #0.2 w_target_sel     = w_hit & w_btb_pred[1]; 
 
     assign      w_btb_target     = btb_array[w_pc_index].target;
     assign      w_btb_pred       = btb_array[w_pc_index].pred;
     assign      w_btb_tag        = btb_array[w_pc_index].tag;
     assign      w_btb_valid      = btb_array[w_pc_index].valid;
-    
+    assign #0.2 o_flush          = i_jump || (hold_branch && ~i_taken);
 
 
-    // Update BTB
+    // Update BTBf
     always @(posedge i_clk or negedge i_rst_n) begin
         #0.5;
         if (!i_rst_n) begin
@@ -107,10 +108,20 @@ module btb
         #0.5;
         if (!i_rst_n) begin
             for (int i = 0; i < ENTRY_NUM; i++) begin
-                btb_array[i].pred <= 2'b00; 
+                btb_array[i].pred <= 2'b01; 
             end
-        end else if (i_taken) begin
-            btb_array[i_pipelined_pc[INDEX + 1:2]].pred <= 2'b10;
+        end else begin
+            if (hold_branch) begin
+                case (i_taken)
+                    1'b1: if (btb_array[i_pipelined_pc[INDEX + 1:2]].pred != 2'b11) begin
+                        btb_array[i_pipelined_pc[INDEX + 1:2]].pred <= btb_array[i_pipelined_pc[INDEX + 1:2]].pred + 1;
+                    end
+                    1'b0: if (btb_array[i_pipelined_pc[INDEX + 1:2]].pred != 2'b00) begin
+                        btb_array[i_pipelined_pc[INDEX + 1:2]].pred <= btb_array[i_pipelined_pc[INDEX + 1:2]].pred - 1;
+                    end
+                    default:; 
+                endcase
+            end
         end
     end
 
