@@ -26,7 +26,7 @@ module ras
         if (!i_rst_n) begin
             ras_top <= 0;
             for (int i = 0; i < 32; i++) begin
-                ras_stack[i] <= '0; // Initialize RAS stack entries to zero
+                ras_stack[i] <= '0; 
             end
         end else begin
             if (o_push) begin
@@ -40,9 +40,9 @@ module ras
 
     always_comb begin
         if (ras_top > 0) begin
-            o_ras_target = ras_stack[ras_top - 1]; // Return the top of the RAS stack
+            o_ras_target = ras_stack[ras_top - 1]; 
         end else begin
-            o_ras_target = '0; // If stack is empty, return zero
+            o_ras_target = '0; 
         end
     end
 
@@ -51,8 +51,8 @@ module ras
             hold_pc_plus4[0] <= '0;
             hold_pc_plus4[1] <= '0;
         end else begin
-            hold_pc_plus4[0] <= i_pc_plus4; // Store current PC+4
-            hold_pc_plus4[1] <= hold_pc_plus4[0]; // Store previous PC+4
+            hold_pc_plus4[0] <= i_pc_plus4; 
+            hold_pc_plus4[1] <= hold_pc_plus4[0]; 
         end
     end
 endmodule
