@@ -108,10 +108,12 @@ always_ff @(posedge i_clk or negedge i_rst_n) begin
         end
     end else begin
         if (i_mem_data_valid && current_state == UPDATE) begin
-            cache[saved_set][replace_way].valid <= 1'b0;
+            cache[saved_set][replace_way].valid <= 1'b1;
             cache[saved_set][replace_way].tag   <= saved_tag;
             for (int i = 0; i < 4; i++) begin
                 cache[saved_set][replace_way].data[i] <= i_mem_data_in[(i * 32) +: 32];
+                // cache[saved_set][replace_way].valid <= 1'b1; 
+                // cache[saved_set][replace_way].tag   <= saved_tag;
             end
         end
     end
