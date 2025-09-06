@@ -16,25 +16,43 @@ module apb (
     output logic        o_apb_pslverr,
 
     // Registers
-    output logic [31:0] o_CMD,
-    output logic [31:0] o_DATA_TX,
-    output logic [31:0] o_DATA_RX,
-    output logic [31:0] o_ADDR_COL,
-    output logic [31:0] o_ADDR_ROW,
-    output logic [31:0] o_STATUS,
-    output logic [31:0] o_CONFIG,
-    output logic [31:0] o_INT_EN
+    output logic [31:0] o_CMD           ,
+    input  logic [31:0] i_STATUS        ,
+    output logic [31:0] o_COMMAND       ,
+    output logic [31:0] o_ADDR0         ,
+    output logic [31:0] o_ADDR1         ,
+    output logic [31:0] o_ADDR2         ,
+    output logic [31:0] o_DATA_TX       ,
+    input  logic [31:0] i_DATA_RX       ,
+    input  logic [31:0] i_FIFO_STATUS   ,
+    output logic [31:0] o_ECC_CTR       ,
+    input  logic [31:0] i_ECC_STATUS    ,
+    output logic [31:0] o_TIMING_CFG    ,
+    output logic [31:0] o_DMA_CTRL      ,
+    input  logic [31:0] i_INT_STATUS    ,
+    output logic [31:0] o_INT_MASK      ,
+    input  logic [31:0] i_BAD_BLOCK_REG ,
+    output logic [31:0] o_CFG
 );
 
     // Internal registers
-    logic [31:0] reg_CMD;
-    logic [31:0] reg_DATA_TX;
-    logic [31:0] reg_DATA_RX;
-    logic [31:0] reg_ADDR_COL;
-    logic [31:0] reg_ADDR_ROW;
-    logic [31:0] reg_STATUS;
-    logic [31:0] reg_CONFIG;
-    logic [31:0] reg_INT_EN;
+    logic [31:0] CMD            ;   // RW
+    logic [31:0] STATUS         ;   // RO
+    logic [31:0] COMMAND        ;   // RW
+    logic [31:0] ADDR0          ;   // RW
+    logic [31:0] ADDR1          ;   // RW
+    logic [31:0] ADDR2          ;   // RW
+    logic [31:0] DATA_TX        ;   // RW
+    logic [31:0] DATA_RX        ;   // RO
+    logic [31:0] FIFO_STATUS    ;   // RW
+    logic [31:0] ECC_CTR        ;   // RW
+    logic [31:0] ECC_STATUS     ;   // RO
+    logic [31:0] TIMING_CFG     ;   // RW
+    logic [31:0] DMA_CTRL       ;   // RW
+    logic [31:0] INT_STATUS     ;   // RW
+    logic [31:0] INT_MASK       ;   // RW
+    logic [31:0] BAD_BLOCK_REG  ;   // RO
+    logic [31:0] CFG            ;   // RW
 
     // Control signals
     logic transfer_en;
@@ -43,63 +61,108 @@ module apb (
     logic addr_decode_error;
 
     // Address constants
-    localparam CMD_ADDR      = 32'h00;
-    localparam DATA_TX_ADDR  = 32'h04;
-    localparam DATA_RX_ADDR  = 32'h08;
-    localparam ADDR_COL_ADDR = 32'h0C;
-    localparam ADDR_ROW_ADDR = 32'h10;
-    localparam STATUS_ADDR   = 32'h14;
-    localparam CONFIG_ADDR   = 32'h18;
-    localparam INT_EN_ADDR   = 32'h1C;
+    localparam CMD_OFFSET             = 32'h00;
+    localparam STATUS_OFFSET          = 32'h04;
+    localparam COMMAND_OFFSET         = 32'h08;
+    localparam ADDR0_OFFSET           = 32'h0C;
+    localparam ADDR1_OFFSET           = 32'h10;
+    localparam ADDR2_OFFSET           = 32'h14;
+    localparam DATA_TX_OFFSET         = 32'h18;
+    localparam DATA_RX_OFFSET         = 32'h1C;
+    localparam FIFO_STATUS_OFFSET     = 32'h20;
+    localparam ECC_CTR_OFFSET         = 32'h24;
+    localparam ECC_STATUS_OFFSET      = 32'h28;
+    localparam TIMING_CFG_OFFSET      = 32'h2C;
+    localparam DMA_CTRL_OFFSET        = 32'h30;   
+    localparam INT_STATUS_OFFSET      = 32'h34;
+    localparam INT_MASK_OFFSET        = 32'h38;
+    localparam BAD_BLOCK_REG_OFFSET   = 32'h3C;
+    localparam CFG_OFFSET             = 32'h40;
 
 
-    assign transfer_en = i_apb_psel & i_apb_penable;
-    assign write_en = transfer_en & i_apb_pwrite;
-    assign read_en = transfer_en & ~i_apb_pwrite;
+    assign transfer_en  = i_apb_psel & i_apb_penable;
+    assign write_en     = transfer_en & i_apb_pwrite;
+    assign read_en      = transfer_en & ~i_apb_pwrite;
     assign o_apb_pready = 1'b1;  
 
     // Connect to outputs
-    assign o_CMD = reg_CMD;
-    assign o_DATA_TX = reg_DATA_TX;
-    assign o_DATA_RX = reg_DATA_RX;
-    assign o_ADDR_COL = reg_ADDR_COL;
-    assign o_ADDR_ROW = reg_ADDR_ROW;
-    assign o_STATUS = reg_STATUS;
-    assign o_CONFIG = reg_CONFIG;
-    assign o_INT_EN = reg_INT_EN;
+    assign o_CMD            = CMD;
+    assign o_STATUS         = STATUS;
+    assign o_COMMAND        = COMMAND;
+    assign o_ADDR0          = ADDR0;
+    assign o_ADDR1          = ADDR1;
+    assign o_ADDR2          = ADDR2;
+    assign o_DATA_TX        = DATA_TX;
+    assign o_ECC_CTR        = ECC_CTR;
+    assign o_TIMING_CFG     = TIMING_CFG;
+    assign o_DMA_CTRL       = DMA_CTRL;
+    assign o_INT_MASK       = INT_MASK;
+    assign o_CFG            = CFG;
 
     
     // Write operations
     always_ff @(posedge i_apb_clk or negedge i_apb_rst_n) begin
         if (!i_apb_rst_n) begin
-            reg_CMD       <= 32'h00000000;
-            reg_DATA_TX   <= 32'h00000000;
-            reg_DATA_RX   <= 32'h00000000;
-            reg_ADDR_COL  <= 32'h00000000;
-            reg_ADDR_ROW  <= 32'h00000000;
-            reg_STATUS    <= 32'h00000000;
-            reg_CONFIG    <= 32'h00000000;
-            reg_INT_EN    <= 32'h00000000;
+            CMD             <= 32'h00000000;
+            STATUS          <= 32'h00000000;
+            COMMAND         <= 32'h00000000;
+            ADDR0           <= 32'h00000000;
+            ADDR1           <= 32'h00000000;
+            ADDR2           <= 32'h00000000;
+            DATA_TX         <= 32'h00000000;
+            FIFO_STATUS     <= 32'h00000000;
+            ECC_CTR         <= 32'h00000000;
+            ECC_STATUS      <= 32'h00000000;
+            TIMING_CFG      <= 32'h00000000;
+            DMA_CTRL        <= 32'h00000000;
+            INT_STATUS      <= 32'h00000000;
+            INT_MASK        <= 32'h00000000;
+            BAD_BLOCK_REG   <= 32'h00000000;
+            CFG             <= 32'h00000000;
         end else if (write_en) begin
             case (i_apb_paddr)
-                CMD_ADDR: begin
-                    if (i_apb_pstrb[0]) reg_CMD[7:0]   <= i_apb_pwdata[7:0];
-                    if (i_apb_pstrb[1]) reg_CMD[15:8]  <= i_apb_pwdata[15:8];
-                    if (i_apb_pstrb[2]) reg_CMD[23:16] <= i_apb_pwdata[23:16];
-                    if (i_apb_pstrb[3]) reg_CMD[31:24] <= i_apb_pwdata[31:24];
+                CMD_OFFSET: begin
+                    if (i_apb_pstrb[0]) CMD[7:0]   <= i_apb_pwdata[7:0];
+                    if (i_apb_pstrb[1]) CMD[15:8]  <= i_apb_pwdata[15:8];
+                    if (i_apb_pstrb[2]) CMD[23:16] <= i_apb_pwdata[23:16];
+                    if (i_apb_pstrb[3]) CMD[31:24] <= i_apb_pwdata[31:24];
                 end
-                DATA_TX_ADDR: begin
-                    if (i_apb_pstrb[0]) reg_DATA_TX[7:0]   <= i_apb_pwdata[7:0];
-                    if (i_apb_pstrb[1]) reg_DATA_TX[15:8]  <= i_apb_pwdata[15:8];
-                    if (i_apb_pstrb[2]) reg_DATA_TX[23:16] <= i_apb_pwdata[23:16];
-                    if (i_apb_pstrb[3]) reg_DATA_TX[31:24] <= i_apb_pwdata[31:24];
+                COMMAND_OFFSET: begin
+                    if (i_apb_pstrb[0]) COMMAND[7:0]   <= i_apb_pwdata[7:0];
+                    if (i_apb_pstrb[1]) COMMAND[15:8]  <= i_apb_pwdata[15:8];
+                    if (i_apb_pstrb[2]) COMMAND[23:16] <= i_apb_pwdata[23:16];
+                    if (i_apb_pstrb[3]) COMMAND[31:24] <= i_apb_pwdata[31:24];
                 end
-                DATA_RX_ADDR:    reg_DATA_RX   <= i_apb_pwdata;
-                ADDR_COL_ADDR:   reg_ADDR_COL  <= i_apb_pwdata;
-                ADDR_ROW_ADDR:   reg_ADDR_ROW  <= i_apb_pwdata;
-                STATUS_ADDR:     reg_STATUS    <= i_apb_pwdata;
-                CONFIG_ADDR:     reg_CONFIG    <= i_apb_pwdata;
-                INT_EN_ADDR:     reg_INT_EN    <= i_apb_pwdata;
+                ADDR0_OFFSET: ADDR0 <= i_apb_pwdata;
+                ADDR1_OFFSET: ADDR1 <= i_apb_pwdata;
+                ADDR2_OFFSET: ADDR2 <= i_apb_pwdata;
+                DATA_TX_OFFSET: DATA_TX <= i_apb_pwdata;
+                ECC_CTR_OFFSET: begin
+                    if (i_apb_pstrb[0]) ECC_CTR[7:0]   <= i_apb_pwdata[7:0];
+                    if (i_apb_pstrb[1]) ECC_CTR[15:8]  <= i_apb_pwdata[15:8];
+                    if (i_apb_pstrb[2]) ECC_CTR[23:16] <= i_apb_pwdata[23:16];
+                    if (i_apb_pstrb[3]) ECC_CTR[31:24] <= i_apb_pwdata[31:24];
+                end
+                TIMING_CFG_OFFSET: TIMING_CFG <= i_apb_pwdata;
+                DMA_CTRL_OFFSET: begin
+                    if (i_apb_pstrb[0]) DMA_CTRL[7:0]   <= i_apb_pwdata[7:0];
+                    if (i_apb_pstrb[1]) DMA_CTRL[15:8]  <= i_apb_pwdata[15:8];
+                    if (i_apb_pstrb[2]) DMA_CTRL[23:16] <= i_apb_pwdata[23:16];
+                    if (i_apb_pstrb[3]) DMA_CTRL[31:24] <= i_apb_pwdata[31:24];
+                end
+                INT_STATUS_OFFSET: INT_STATUS <= i_apb_pwdata; // Write to clear
+                INT_MASK_OFFSET: begin
+                    if (i_apb_pstrb[0]) INT_MASK[7:0]   <= i_apb_pwdata[7:0];
+                    if (i_apb_pstrb[1]) INT_MASK[15:8]  <= i_apb_pwdata[15:8];
+                    if (i_apb_pstrb[2]) INT_MASK[23:16] <= i_apb_pwdata[23:16];
+                    if (i_apb_pstrb[3]) INT_MASK[31:24] <= i_apb_pwdata[31:24];
+                end
+                CFG_OFFSET: begin
+                    if (i_apb_pstrb[0]) CFG[7:0]   <= i_apb_pwdata[7:0];
+                    if (i_apb_pstrb[1]) CFG[15:8]  <= i_apb_pwdata[15:8];
+                    if (i_apb_pstrb[2]) CFG[23:16] <= i_apb_pwdata[23:16];
+                    if (i_apb_pstrb[3]) CFG[31:24] <= i_apb_pwdata[31:24];
+                end                
                 default: ;  
             endcase
         end
@@ -112,14 +175,23 @@ module apb (
         
         if (read_en) begin
             case (i_apb_paddr)
-                CMD_ADDR:      o_apb_prdata = reg_CMD;
-                DATA_TX_ADDR:  o_apb_prdata = reg_DATA_TX;
-                DATA_RX_ADDR:  o_apb_prdata = reg_DATA_RX;
-                ADDR_COL_ADDR: o_apb_prdata = reg_ADDR_COL;
-                ADDR_ROW_ADDR: o_apb_prdata = reg_ADDR_ROW;
-                STATUS_ADDR:   o_apb_prdata = reg_STATUS;
-                CONFIG_ADDR:   o_apb_prdata = reg_CONFIG;
-                INT_EN_ADDR:   o_apb_prdata = reg_INT_EN;
+                CMD_OFFSET:             o_apb_prdata = CMD              ;
+                STATUS_OFFSET:          o_apb_prdata = STATUS           ;
+                COMMAND_OFFSET:         o_apb_prdata = COMMAND          ; 
+                ADDR0_OFFSET:           o_apb_prdata = ADDR0            ;
+                ADDR1_OFFSET:           o_apb_prdata = ADDR1            ;
+                ADDR2_OFFSET:           o_apb_prdata = ADDR2            ;
+                DATA_TX_OFFSET:         o_apb_prdata = DATA_TX          ;
+                DATA_RX_OFFSET:         o_apb_prdata = DATA_RX          ;
+                FIFO_STATUS_OFFSET:     o_apb_prdata = FIFO_STATUS      ;
+                ECC_CTR_OFFSET:         o_apb_prdata = ECC_CTR          ;
+                ECC_STATUS_OFFSET:      o_apb_prdata = ECC_STATUS       ;
+                TIMING_CFG_OFFSET:      o_apb_prdata = TIMING_CFG       ;
+                DMA_CTRL_OFFSET:        o_apb_prdata = DMA_CTRL         ;
+                INT_STATUS_OFFSET:      o_apb_prdata = INT_STATUS       ;
+                INT_MASK_OFFSET:        o_apb_prdata = INT_MASK         ;
+                BAD_BLOCK_REG_OFFSET:   o_apb_prdata = BAD_BLOCK_REG    ;
+                CFG_OFFSET:             o_apb_prdata = CFG              ;
                 default: begin
                     o_apb_prdata = 32'h00000000;
                     addr_decode_error = 1'b1;
@@ -128,6 +200,25 @@ module apb (
         end
     end
 
+    always_ff @(posedge i_apb_clk or negedge i_apb_rst_n) begin
+        if (!i_apb_rst_n) begin
+            STATUS          <= 32'h00000000     ;
+            FIFO_STATUS     <= 32'h00000000     ;
+            INT_STATUS      <= 32'h00000000     ;
+            DATA_RX         <= 32'h00000000     ;
+            ECC_STATUS      <= 32'h00000000     ;
+            BAD_BLOCK_REG   <= 32'h00000000     ;
+        end else begin
+            DATA_RX         <= i_DATA_RX        ;
+            FIFO_STATUS     <= i_FIFO_STATUS    ;
+            STATUS          <= i_STATUS         ; 
+            ECC_STATUS      <= i_ECC_STATUS     ;
+            INT_STATUS      <= i_INT_STATUS     ;
+            BAD_BLOCK_REG   <= i_BAD_BLOCK_REG  ;
+        end
+    end
+
     // Error handling
     assign o_apb_pslverr = addr_decode_error | (i_apb_pprot[0] & (i_apb_paddr[31:28] == 4'hF));
 endmodule
+

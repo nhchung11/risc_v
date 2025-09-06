@@ -1,117 +1,119 @@
 module tb;
 
     // Testbench signals
-    logic         tb_apb_clk;
-    logic         tb_apb_rst_n;
-    logic         tb_apb_psel;
-    logic         tb_apb_penable;
-    logic         tb_apb_pwrite;
-    logic [31:0]  tb_apb_paddr;
-    logic [31:0]  tb_apb_pwdata;
-    logic [3:0]   tb_apb_pstrb;
-    logic [2:0]   tb_apb_pprot;
-    
-    logic         tb_apb_pready;
-    logic [31:0]  tb_apb_prdata;
-    logic         tb_apb_pslverr;
+    logic i_apb_clk;
+    logic i_apb_rst_n;
+    logic i_apb_psel;
+    logic i_apb_penable;
+    logic i_apb_pwrite;
+    logic [31:0] i_apb_paddr;
+    logic [31:0] i_apb_pwdata;
+    logic [3:0] i_apb_pstrb;
+    logic [31:0] i_DATA_RX;
+    logic [31:0] i_STATUS;
+    logic [31:0] i_FIFO_STATUS;
+    logic [31:0] i_ECC_STATUS;
+    logic [31:0] i_INT_STATUS;
+    logic [31:0] i_BAD_BLOCK_REG;
+
+    // Outputs
+    logic o_apb_pready;
+    logic [31:0] o_apb_prdata;
+    logic o_apb_pslverr;
+    logic [31:0] o_CMD;
+    logic [31:0] o_COMMAND;
+    logic [31:0] o_ADDR0;
+    logic [31:0] o_ADDR1;
+    logic [31:0] o_ADDR2;
+    logic [31:0] o_DATA_TX;
+    logic [31:0] o_ECC_CTR;
+    logic [31:0] o_TIMING_CFG;
+    logic [31:0] o_DMA_CTRL;
+    logic [31:0] o_INT_MASK;
+    logic [31:0] o_CFG;
 
     // Instantiate the DUT
     apb dut (
-        .i_apb_clk(tb_apb_clk),
-        .i_apb_rst_n(tb_apb_rst_n),
-        .i_apb_psel(tb_apb_psel),
-        .i_apb_penable(tb_apb_penable),
-        .i_apb_pwrite(tb_apb_pwrite),
-        .i_apb_paddr(tb_apb_paddr),
-        .i_apb_pwdata(tb_apb_pwdata),
-        .i_apb_pstrb(tb_apb_pstrb),
-        .i_apb_pprot(tb_apb_pprot),
-        .o_apb_pready(tb_apb_pready),
-        .o_apb_prdata(tb_apb_prdata),
-        .o_apb_pslverr(tb_apb_pslverr),
-        .o_CMD(),
-        .o_DATA_TX(),
-        .o_DATA_RX(),
-        .o_ADDR_COL(),
-        .o_ADDR_ROW(),
-        .o_STATUS(),
-        .o_CONFIG(),
-        .o_INT_EN()
+        .i_apb_clk(i_apb_clk),
+        .i_apb_rst_n(i_apb_rst_n),
+        .i_apb_psel(i_apb_psel),
+        .i_apb_penable(i_apb_penable),
+        .i_apb_pwrite(i_apb_pwrite),
+        .i_apb_paddr(i_apb_paddr),
+        .i_apb_pwdata(i_apb_pwdata),
+        .i_apb_pstrb(i_apb_pstrb),
+        .i_apb_pprot(3'b000), 
+        .i_DATA_RX(i_DATA_RX),
+        .i_STATUS(i_STATUS),
+        .i_FIFO_STATUS(i_FIFO_STATUS),
+        .i_ECC_STATUS(i_ECC_STATUS),
+        .i_INT_STATUS(i_INT_STATUS),
+        .i_BAD_BLOCK_REG(i_BAD_BLOCK_REG),
+        .o_apb_pready(o_apb_pready),
+        .o_apb_prdata(o_apb_prdata),
+        .o_apb_pslverr(o_apb_pslverr),
+        .o_CMD(o_CMD),
+        .o_COMMAND(o_COMMAND),
+        .o_ADDR0(o_ADDR0),
+        .o_ADDR1(o_ADDR1),
+        .o_ADDR2(o_ADDR2),
+        .o_DATA_TX(o_DATA_TX),
+        .o_ECC_CTR(o_ECC_CTR),
+        .o_TIMING_CFG(o_TIMING_CFG),
+        .o_DMA_CTRL(o_DMA_CTRL),
+        .o_INT_MASK(o_INT_MASK),
+        .o_CFG(o_CFG)
     );
 
-    // Clock
+    // Clock generation
     initial begin
-        tb_apb_clk = 0;
-        forever #5 tb_apb_clk = ~tb_apb_clk; 
+        i_apb_clk = 0;
+        forever #5 i_apb_clk = ~i_apb_clk; // 100MHz clock
     end
 
-    // Write task
-    task write_apb(input logic [31:0] addr, input logic [31:0] data);
-        begin
-            @(posedge tb_apb_clk);
-            tb_apb_psel = 1;
-            tb_apb_penable = 1;
-            tb_apb_pwrite = 1;
-            tb_apb_paddr = addr;
-            tb_apb_pwdata = data;
-            @(posedge tb_apb_clk); 
-            tb_apb_psel = 0;
-            tb_apb_penable = 0;
-            tb_apb_pwrite = 0;
-        end
-    endtask
-
-    // Read task
-    task read_apb(input logic [31:0] addr);
-        begin
-            @(posedge tb_apb_clk); 
-            tb_apb_psel = 1;
-            tb_apb_penable = 1;
-            tb_apb_pwrite = 0;
-            tb_apb_paddr = addr;
-            @(posedge tb_apb_clk);
-            tb_apb_psel = 0;
-            tb_apb_penable = 0;
-        end
-    endtask
-
-    // Testbench 
+    // Test sequence
     initial begin
-        tb_apb_rst_n = 0;
-        tb_apb_psel = 0;
-        tb_apb_penable = 0;
-        tb_apb_pwrite = 0;
-        tb_apb_paddr = 0;
-        tb_apb_pwdata = 0;
-        tb_apb_pstrb = 4'b1111;
-        tb_apb_pprot = 3'b000;
+        // Initialize inputs
+        i_apb_rst_n = 0;
+        i_apb_psel = 0;
+        i_apb_penable = 0;
+        i_apb_pwrite = 0;
+        i_apb_paddr = 0;
+        i_apb_pwdata = 0;
+        i_apb_pstrb = 4'b1111;
+        i_DATA_RX = 32'hDEADBEEF;
+        i_STATUS = 32'h00000000;
+        i_FIFO_STATUS = 32'h00000000;
+        i_ECC_STATUS = 32'h00000000;
+        i_INT_STATUS = 32'h00000000;
+        i_BAD_BLOCK_REG = 32'h00000000;
 
-        // Release reset
+        // Reset the DUT
         #10;
-        tb_apb_rst_n = 1;
+        i_apb_rst_n = 1;
 
-        // Write few times
-        write_apb(32'h0000_0000, 32'hDEADBEEF);
-        write_apb(32'h0000_0004, 32'hCAFEBABE);
-        write_apb(32'h0000_0008, 32'h12345678);
-        write_apb(32'h0000_000C, 32'h87654321);
-        write_apb(32'h0000_0010, 32'hAABBCCDD);
-        write_apb(32'h0000_0014, 32'h11223344);
-        write_apb(32'h0000_0018, 32'h55667788);
-        write_apb(32'h0000_001C, 32'h99AABBCC);
-        write_apb(32'h0000_0020, 32'hFFFFFFFF);
+        // Test write operation
+        i_apb_psel = 1;
+        i_apb_penable = 1;
+        i_apb_pwrite = 1;
+        i_apb_paddr = 32'h00; // Write to CMD
+        i_apb_pwdata = 32'h12345678;
+        #10;
 
-        // Read few times
-        read_apb(32'h0000_0000);
-        read_apb(32'h0000_0004);
-        read_apb(32'h0000_0008);
-        read_apb(32'h0000_000C);
-        read_apb(32'h0000_0010);
-        read_apb(32'h0000_0014);
-        read_apb(32'h0000_0018);
-        read_apb(32'h0000_001C);
-        read_apb(32'h0000_0020);
-        #200;
+        // Test read operation
+        i_apb_pwrite = 0;
+        i_apb_paddr = 32'h00; // Read CMD
+        #10;
+
+        // Check output
+        if (o_apb_prdata !== 32'h12345678) begin
+            $display("Error: Read data mismatch!");
+        end else begin
+            $display("Read data matched: %h", o_apb_prdata);
+        end
+
+        // Finish simulation
+        #100;
         $finish;
     end
 
